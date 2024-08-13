@@ -1,0 +1,36 @@
+#isDarkmodeContainer {
+    position: fixed;
+    left: 10px;
+    bottom: 10px;
+    border: 1px solid var(--element-border-color);
+    box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 40px;
+}
+
+.DisplayArea {
+    max-width: 1000px;
+    min-width: 300px;
+}
+
+.title {
+    font-size: clamp(30px, 5vw, 50px);
+    margin-bottom: 10px;
+}
+
+.subTitle {
+    font-size: clamp(20px, 3vw, 30px);
+    margin-top: auto;
+    margin-bottom: 12px;
+}
+
+.RowContainer {
+    width: min(100%, 750px);
+}
+
+#versionRecordTable {
+    max-width: min(100%, 600px);
+}
+
+#versionRecordTable td {
+    padding: 10px;
+}

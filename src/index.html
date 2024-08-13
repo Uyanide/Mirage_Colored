@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幻影坦克生成</title>
+</head>
+
+<body class="displayFlexColumn marginTopHigh backgroundPrimary frontColor">
+
+    <h1 class="title marginBottomMedium">幻影坦克工厂</h1>
+
+    <div class="fontMedium frontSecondaryColor marginTopMedium">支持全彩喔 ;D</div>
+
+    <div class="switchContainer displayFlexRow paddingHigh backgroundSecondary" id="isDarkmodeContainer">
+        <div id="isDarkModeLabel" class="marginRightLow fontMedium">关灯</div>
+        <label class="switch">
+            <input type="checkbox" id="isDarkmodeCheckbox">
+            <span class="switchSlider"></span>
+        </label>
+    </div>
+
+    <div class="DisplayArea displayFlexColumn refWidthFull marginTopHigh">
+        <div
+            class="PageContainer borderRadiusExtreme fontMedium frontColor displayFlexColumn refWidthHigh backgroundSecondary paddingHigh">
+            <div class="RowContainer refWidthHigh displayFlexRow justifySpaceBetween marginTopHigh">
+                <div class="CanvasContainer displayFlexColumn paddingMedium refWidthHalf">
+                    <div class="marginBottomMedium">
+                        <label for="innerFileInput" class="inputReact transformSize">选择里图文件</label>
+                        <input type="file" id="innerFileInput" accept="image/*">
+                    </div>
+                    <div id="innerInputHint" class="displayFlexColumn marginTopLow fontSmall">
+                        <div>或拖动至屏幕左侧</div>
+                        <div class="marginTopLow">或粘贴 (ctrl+v)</div>
+                    </div>
+                    <canvas id="innerCanvas" class="refWidthFull marginTopMedium"></canvas>
+                </div>
+                <div class="CanvasContainer displayFlexColumn paddingMedium refWidthHalf">
+                    <div class="marginBottomMedium">
+                        <label for="coverFileInput" class="inputReact transformSize">选择表图文件</label>
+                        <input type="file" id="coverFileInput" accept="image/*">
+                    </div>
+                    <div id="coverInputHint" class="displayFlexColumn marginTopLow fontSmall">
+                        <div>或拖动至屏幕右侧</div>
+                        <div class="marginTopLow">或粘贴 (ctrl+v)</div>
+                    </div>
+                    <canvas id="coverCanvas" class="refWidthFull marginTopMedium"></canvas>
+                </div>
+            </div>
+            <div class="RowContainer refWidthHigh displayFlexRow justifySpaceBetween marginTopHigh">
+                <div class="CanvasContainer displayFlexColumn paddingMedium refWidthHalf">
+                    <div class="switchContainer">
+                        <div class="marginRightLow fontMedium">全彩输出</div>
+                        <label class="switch">
+                            <input type="checkbox" id="isColoredCheckbox">
+                            <span class="switchSlider"></span>
+                        </label>
+                    </div>
+                    <div class="marginTopMedium">输出图像尺寸:</div>
+                    <input type="number" id="maxSizeInput" class="inputReact marginTopLow" min="1" max="4096">
+                    <div class="marginTopLow fontSmall frontSecondaryColor">(指长和宽中的较大值)</div>
+                    <div class="fontSmall frontSecondaryColor">(0即为不指定)</div>
+                    <div class="marginTopMedium">里图混合权重</div>
+                    <input type="range" id="innerWeightRange" class="refWidthHigh marginTopLow" min="0" max="1"
+                        step="0.02">
+                    <div class="marginTopLow">
+                        <span>或输入: </span>
+                        <input type="number" id="innerWeightInput" class="inputReact" step="0.02">
+                    </div>
+                    <div class="marginTopLow fontSmall frontSecondaryColor">(0~1,黑白输出时无效)<br>(越高里图色彩越准确)<br>(反之表图色彩越准确)
+                    </div>
+                </div>
+                <div class="CanvasContainer displayFlexColumn paddingMedium refWidthHalf">
+                    <div class="">↓ 输出图像 ↓</div>
+                    <canvas id="outputCanvas" class="refWidthFull marginTopMedium"></canvas>
+                    <button id="saveButton" class="inputReact transformSize marginTopHigh">保存结果</button>
+                </div>
+            </div>
+            <div class="RowContainer refWidthHigh displayFlexRow justifySpaceBetween marginTopHigh marginBottomHigh">
+                <div class="CanvasContainer displayFlexColumn paddingMedium refWidthHalf">
+                    <div class="marginTopMedium">里图色阶缩放</div>
+                    <input type="range" id="innerScaleRange" class="refWidthHigh marginTopLow" min="0" max="1"
+                        step="0.02">
+                    <div class="marginTopLow">
+                        <span>或输入: </span>
+                        <input type="number" id="innerScaleInput" class="inputReact" step="0.02">
+                    </div>
+                    <div class="marginTopLow diplayFlexColumn fontSmall frontSecondaryColor">(0~1,越低里图越暗)
+                    </div>
+                    <div class="marginTopMedium">↓ 黑色背景预览 ↓</div>
+                    <canvas id="blackCanvas" class="refWidthFull marginTopMedium"></canvas>
+                </div>
+                <div class="CanvasContainer displayFlexColumn paddingMedium refWidthHalf">
+                    <div class="marginTopMedium">表图色阶缩放</div>
+                    <input type="range" id="coverScaleRange" class="refWidthHigh marginTopLow" min="0" max="1"
+                        step="0.02">
+                    <div class="marginTopLow">
+                        <span>或输入: </span>
+                        <input type="number" id="coverScaleInput" class="inputReact" step="0.02">
+                    </div>
+                    <div class="marginTopLow diplayFlexColumn fontSmall frontSecondaryColor">(0~1,越高表图越亮)
+                    </div>
+                    <div class="marginTopMedium">↓ 白色背景预览 ↓</div>
+                    <canvas id="whiteCanvas" class="refWidthFull marginTopMedium"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pageBelow" class="displayFlex frontColor justifyCenter alignCenter flexColumn marginTopHigh">
+        <div id="versionInfo" class="fontLarge">version: <b>UNKNOWN</b></div>
+
+        <div class="marginTopLow fontSmall">
+            如发现有功能不正常可手动清理浏览器缓存后刷新
+        </div>
+
+        <div class="marginTopMedium fontSmall transformSize">
+            <a class="frontLinkColor" href="https://github.com/Uyanide" target="_blank">Github - Uyanide (我)</a>
+        </div>
+
+        <div class="marginTopMedium fontSmall transformSize">
+            <a class="frontLinkColor" href="https://github.com/Uyanide/Mirage_Cloak" target="_blank">Github -
+                Mirage_Cloak (本项目仓库)</a>
+        </div>
+
+        <div id="versionRecordButton" class="marginTopLow">
+            <button id="toggleVersionRecord"
+                class="frontLinkColor backgroundPrimary borderNone fontSmall transformSize borderSolidNone">显示主要更新记录</button>
+        </div>
+
+        <div id="versionRecord" class="marginTopMedium marginBottomMedium">
+            <table id="versionRecordTable"
+                class="fontSmall paddingHigh borderRadiusExtreme displayNone backgroundSecondary borderCollapse">
+                <tbody>
+                    <tr>
+                        <td>1.0.0</td>
+                        <td>初始版本。
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
