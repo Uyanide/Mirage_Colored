@@ -49,10 +49,10 @@ module.exports = {
             //         },
             //     },
             // },
-            {
-                test: /\.wasm$/,
-                type: 'webassembly/async',
-            },
+            // {
+            //     test: /\.wasm$/,
+            //     type: 'webassembly/async',
+            // },
         ],
     },
     plugins: [
@@ -60,23 +60,23 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: './src/index.html',
             inject: 'body',
-            // inlineSource: '.(js|css)$',
+            inlineSource: '.(js|css)$',
         }),
-        // new HtmlinlineScriptPlugin(),
+        new HtmlinlineScriptPlugin(),
     ],
     mode: 'production',
     // mode: 'development',
     // devtool: 'source-map',
-    // optimization: {
-    //     minimize: true,
-    //     minimizer: [new TerserPlugin({
-    //         // terserOptions: {
-    //         //     compress: {
-    //         //         drop_console: true,
-    //         //     },
-    //         // },
-    //     })],
-    // },
+    optimization: {
+        minimize: true,
+        minimizer: [new TerserPlugin({
+            // terserOptions: {
+            //     compress: {
+            //         drop_console: true,
+            //     },
+            // },
+        })],
+    },
     devServer: {
         static: {
             directory: path.join(__dirname, './docs'),
