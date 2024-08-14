@@ -3,10 +3,12 @@ const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const HtmlinlineScriptPlugin = require('html-inline-script-webpack-plugin');
 
 module.exports = {
     entry: './src/scripts/init.js',
     output: {
+        // filename: 'main.js',
         filename: '[name].[contenthash].js',
         path: path.resolve(__dirname, './docs'),
     },
@@ -23,17 +25,17 @@ module.exports = {
                     },
                 },
             },
-            // {
-            //     test: /\.(png|jpe?g|gif|ico)$/i,
-            //     use: [
-            //         {
-            //             loader: 'file-loader',
-            //             options: {
-            //                 name: '[path][name].[ext]',
-            //             },
-            //         },
-            //     ],
-            // },
+            {
+                test: /\.(png|jpe?g|gif|ico)$/i,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: '[path][name].[ext]',
+                        },
+                    },
+                ],
+            },
             {
                 test: /\.css$/i,
                 use: ['style-loader', 'css-loader'],
@@ -47,33 +49,45 @@ module.exports = {
             //         },
             //     },
             // },
+            {
+                test: /\.wasm$/,
+                type: 'webassembly/async',
+            },
         ],
     },
     plugins: [
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             template: './src/index.html',
-            inject: 'head',
+            inject: 'body',
+            // inlineSource: '.(js|css)$',
         }),
+        // new HtmlinlineScriptPlugin(),
     ],
     mode: 'production',
     // mode: 'development',
     // devtool: 'source-map',
-    optimization: {
-        minimize: true,
-        minimizer: [new TerserPlugin({
-            // terserOptions: {
-            //     compress: {
-            //         drop_console: true,
-            //     },
-            // },
-        })],
-    },
+    // optimization: {
+    //     minimize: true,
+    //     minimizer: [new TerserPlugin({
+    //         // terserOptions: {
+    //         //     compress: {
+    //         //         drop_console: true,
+    //         //     },
+    //         // },
+    //     })],
+    // },
     devServer: {
         static: {
             directory: path.join(__dirname, './docs'),
         },
         compress: true,
         port: 9000,
+    },
+    experiments: {
+        asyncWebAssembly: true,
+    },
+    resolve: {
+        extensions: ['.js', '.json', '.wasm'],
     },
 };

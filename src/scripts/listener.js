@@ -85,7 +85,7 @@ const eventListU = [
     {
         id: 'coverScaleRange', event: 'input', callback: (e) => {
             coverScaleInput.value = e.target.value;
-            processor.mirage.updateCoverScale(1 - parseFloat(e.target.value));
+            processor.mirage.updateCoverScale(parseFloat(e.target.value));
         }
     },
     {
@@ -99,7 +99,7 @@ const eventListU = [
                 value = Math.min(Math.max(value, 0), 1);
                 coverScaleSlider.value = value;
                 coverScaleInput.value = value;
-                processor.mirage.updateCoverScale(1 - value);
+                processor.mirage.updateCoverScale(value);
             }, 500);
         }
     },
@@ -144,6 +144,11 @@ const eventListU = [
         id: 'saveButton', event: 'click', callback: () => {
             processor.mirage.saveResult();
         }, errorMsg: '保存失败! '
+    },
+    {
+        id: 'swapButton', event: 'click', callback: () => {
+            processor.mirage.swapImg();
+        }
     }
 ]
 

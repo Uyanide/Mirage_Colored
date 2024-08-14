@@ -2,7 +2,7 @@
     "app_version": "1.0.0",
     "is_colored": true,
     "scale_i": 0.3,
-    "scale_c": 0.3,
+    "scale_c": 0.2,
     "weight_i": 0.7,
     "max_size": 1200
 }

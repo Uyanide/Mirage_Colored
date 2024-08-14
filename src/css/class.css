@@ -5,7 +5,7 @@
     --element-backgound-color: #f6f6f6;
     --front-color: #000;
     --front-secondary-color: #666;
-    --element-border-color: #ccc;
+    --element-border-color: #b8b8b8;
     --link-color: #2285d5;
 
     --large-font-size: 1.2rem;
@@ -20,7 +20,7 @@
     --element-backgound-color: #eaeaea;
     --front-color: #000;
     --front-secondary-color: #666;
-    --element-border-color: #cccccc;
+    --element-border-color: #b8b8b8;
     --link-color: #2285d5;
 }
 
@@ -61,6 +61,11 @@ input[type=number] {
 
 Canvas {
     border: 1px solid var(--element-border-color);
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--element-border-color);
 }
 
 /**************************************/
@@ -189,7 +194,7 @@ Canvas {
     text-decoration: none;
 }
 
-.borferNone {
+.borderNone {
     border: none;
 }
 
