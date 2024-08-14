@@ -74,7 +74,6 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: './src/index.html',
             inject: 'head',
-            inlineSource: '.(js|css|ico)$',
             scriptLoading: 'defer',
         }),
         new HtmlinlineScriptPlugin(),
