@@ -29,13 +29,6 @@ const setup = async (event, callback, errorMsg = '操作失败! ') => {
     }
 }
 
-const innerScaleSlider = document.getElementById('innerScaleRange');
-const innerScaleInput = document.getElementById('innerScaleInput');
-const coverScaleSlider = document.getElementById('coverScaleRange');
-const coverScaleInput = document.getElementById('coverScaleInput');
-const innerWeightSlider = document.getElementById('innerWeightRange');
-const innerWeightInput = document.getElementById('innerWeightInput');
-
 const eventListU = [
     {
         id: 'innerFileInput', event: 'change', callback: async (e) => {
@@ -63,7 +56,7 @@ const eventListU = [
     },
     {
         id: 'innerScaleRange', event: 'input', callback: (e) => {
-            innerScaleInput.value = e.target.value;
+            applicationState.innerScaleInput.value = e.target.value;
             processor.mirage.updateInnerScale(parseFloat(e.target.value));
         }
     },
@@ -76,15 +69,15 @@ const eventListU = [
                     return;
                 }
                 value = Math.min(Math.max(value, 0), 1);
-                innerScaleSlider.value = value;
-                innerScaleInput.value = value;
+                applicationState.innerScaleSlider.value = value;
+                applicationState.innerScaleInput.value = value;
                 processor.mirage.updateInnerScale(value);
             }, 500);
         }
     },
     {
         id: 'coverScaleRange', event: 'input', callback: (e) => {
-            coverScaleInput.value = e.target.value;
+            applicationState.coverScaleInput.value = e.target.value;
             processor.mirage.updateCoverScale(parseFloat(e.target.value));
         }
     },
@@ -97,15 +90,15 @@ const eventListU = [
                     return;
                 }
                 value = Math.min(Math.max(value, 0), 1);
-                coverScaleSlider.value = value;
-                coverScaleInput.value = value;
+                applicationState.coverScaleSlider.value = value;
+                applicationState.coverScaleInput.value = value;
                 processor.mirage.updateCoverScale(value);
             }, 500);
         }
     },
     {
         id: 'innerWeightRange', event: 'input', callback: (e) => {
-            innerWeightInput.value = e.target.value;
+            applicationState.innerWeightInput.value = e.target.value;
             processor.mirage.updateInnerWeight(parseFloat(e.target.value));
         }
     },
@@ -118,8 +111,8 @@ const eventListU = [
                     return;
                 }
                 value = Math.min(Math.max(value, 0), 1);
-                innerWeightSlider.value = value;
-                innerWeightInput.value = value;
+                applicationState.innerWeightSlider.value = value;
+                applicationState.innerWeightInput.value = value;
                 processor.mirage.updateInnerWeight(value);
             }, 500);
         }
@@ -149,11 +142,37 @@ const eventListU = [
         id: 'swapButton', event: 'click', callback: () => {
             processor.mirage.swapImg();
         }
+    },
+    {
+        id: 'downloadHtmlLink', event: 'click', callback: () => {
+            const currentHtml = document.documentElement.outerHTML;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(currentHtml, 'text/html');
+            const sourceElement = doc.getElementById('content');
+            const newDoc = document.implementation.createHTMLDocument('Filtered Document');
+            newDoc.head.innerHTML = doc.head.innerHTML;
+            doc.body.classList.forEach(cls => newDoc.body.classList.add(cls));
+            newDoc.body.appendChild(newDoc.importNode(sourceElement, true));
+            const a = document.createElement('a');
+            a.download = 'mirage.html';
+            a.href = URL.createObjectURL(new Blob([newDoc.documentElement.outerHTML], { type: 'text/html' }));
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }, errorMsg: '下载失败! '
     }
 ]
 
 const setUpListeners = () => {
     try {
+        applicationState.innerScaleSlider = document.getElementById('innerScaleRange');
+        applicationState.innerScaleInput = document.getElementById('innerScaleInput');
+        applicationState.coverScaleSlider = document.getElementById('coverScaleRange');
+        applicationState.coverScaleInput = document.getElementById('coverScaleInput');
+        applicationState.innerWeightSlider = document.getElementById('innerWeightRange');
+        applicationState.innerWeightInput = document.getElementById('innerWeightInput');
+
         eventListU.forEach((event) => {
             document.getElementById(event.id).addEventListener(event.event, (e) => {
                 setup(e, event.callback, event.errorMsg || '操作失败! ');

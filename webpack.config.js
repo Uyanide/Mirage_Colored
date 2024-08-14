@@ -26,7 +26,7 @@ module.exports = {
                 },
             },
             {
-                test: /\.(png|jpe?g|gif|ico)$/i,
+                test: /\.(png|jpe?g|gif)$/i,
                 use: [
                     {
                         loader: 'file-loader',
@@ -37,8 +37,22 @@ module.exports = {
                 ],
             },
             {
+                test: /\.ico$/i,
+                use: [
+                    {
+                        loader: 'url-loader',
+                        options: {
+                            name: '[name].[hash].[ext]',
+                        },
+                    },
+                ],
+            },
+            {
                 test: /\.css$/i,
-                use: ['style-loader', 'css-loader'],
+                use: [
+                    'style-loader',
+                    'css-loader',
+                ],
             },
             // {
             //     test: /\.worker\.js$/,
@@ -59,8 +73,9 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             template: './src/index.html',
-            inject: 'body',
-            inlineSource: '.(js|css)$',
+            inject: 'head',
+            inlineSource: '.(js|css|ico)$',
+            scriptLoading: 'defer',
         }),
         new HtmlinlineScriptPlugin(),
     ],
@@ -83,11 +98,5 @@ module.exports = {
         },
         compress: true,
         port: 9000,
-    },
-    experiments: {
-        asyncWebAssembly: true,
-    },
-    resolve: {
-        extensions: ['.js', '.json', '.wasm'],
     },
 };

@@ -1,6 +1,6 @@
-const applicationState = {};
-const errorHandling = {};
-const processor = {};
+const applicationState = applicationState || {};
+const errorHandling = errorHandling || {};
+const processor = processor || {};
 
 export {
     applicationState,

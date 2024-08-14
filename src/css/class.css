@@ -40,6 +40,7 @@
 * {
     transition: background-color 0.3s ease-in-out, color 0.1s ease-in-out;
     user-select: none;
+    box-sizing: content-box;
 }
 
 .inputReact {
@@ -192,6 +193,10 @@ hr {
 
 .textDecorationNone {
     text-decoration: none;
+}
+
+.textDecorationUnderline {
+    text-decoration: underline;
 }
 
 .borderNone {

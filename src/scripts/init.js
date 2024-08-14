@@ -2,6 +2,8 @@ import '../css/switch.css';
 import '../css/class.css';
 import '../css/spec.css';
 
+import icon from '../res/NiceBow.ico';
+
 import { applicationState, errorHandling, processor } from './global';
 import { getArguments } from './defaultArguments';
 import { Mirage_Colored } from './process';
@@ -35,6 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (applicationState.isDownloadNotSupported) {
         alert('由于浏览器限制，图片保存功能可能出现异常，建议使用其他浏览器或等待后续更新适配。');
     }
+
+    const link = document.createElement('link');
+    link.rel = 'shortcut icon';
+    link.href = icon;
+    document.head.appendChild(link);
 
     applicationState.defaultArguments = getArguments();
     applicationState.version = applicationState.defaultArguments.app_version;
