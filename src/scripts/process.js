@@ -1,17 +1,34 @@
 export class Mirage_Colored {
     constructor(defaultArguments, innerCanvas, coverCanvas, outputCanvas, whiteCanvas, blackCanvas) {
+        // Arguments
         this._scale_i = defaultArguments.scale_i;
         this._scale_c = 1 - defaultArguments.scale_c;
+
         this._weight_i = defaultArguments.weight_i;
 
+        this._desat_i = defaultArguments.desat_i;
+        this._desat_c = defaultArguments.desat_c;
+
+        this._is_colored = defaultArguments.is_colored;
+        this._max_size = defaultArguments.max_size;
+
+        // Canvases
         this._innerCanvas = innerCanvas;
         this._coverCanvas = coverCanvas;
         this._outputCanvas = outputCanvas;
         this._whiteCanvas = whiteCanvas;
         this._blackCanvas = blackCanvas;
 
-        this._is_colored = defaultArguments.is_colored;
-        this._max_size = defaultArguments.max_size;
+        // ImageData
+        this._innerImgData = null;
+        this._coverImgData = null;
+
+        // ImageData data
+        this._innerDataGray = null;
+        this._coverDataGray = null;
+        this._innerDataCache = null;
+        this._coverDataCache = null;
+        this._outputData = null;
     }
 
     updateInnerImg = async (img) => {
@@ -36,10 +53,7 @@ export class Mirage_Colored {
         const ctx = this._innerCanvas.getContext('2d');
         ctx.drawImage(img, 0, 0, this._width, this._height);
         this._innerImgData = ctx.getImageData(0, 0, this._width, this._height);
-
-        if (!this._is_colored) {
-            this._convertGray(this._innerImgData);
-        }
+        this._innerDataGray = this._convertGray(this._innerImgData);
 
         if (this._coverImgData) {
             this.updateCoverImg(this._coverImg);
@@ -78,9 +92,7 @@ export class Mirage_Colored {
             this._coverImgData = ctx.getImageData(0, 0, img.width, img.height);
         }
 
-        if (!this._is_colored) {
-            this._convertGray(this._coverImgData);
-        }
+        this._coverDataGray = this._convertGray(this._coverImgData);
 
         if (this._innerImgData) {
             this._process();
@@ -103,17 +115,10 @@ export class Mirage_Colored {
             this._innerImg = null;
             return;
         }
-        const tmp = this._innerImg;
-        this._innerImg = this._coverImg;
-        this._coverImg = tmp;
-        const tmpData = this._innerImgData;
-        this._innerImgData = this._coverImgData;
-        this._coverImgData = tmpData;
-        this._innerCanvas.getContext('2d').putImageData(this._innerImgData, 0, 0);
-        this._coverCanvas.getContext('2d').putImageData(this._coverImgData, 0, 0);
-        this._innerDataCache = null;
-        this._coverDataCache = null;
-        this._process();
+        this._coverImgData = null;
+        const tempImg = this._innerImg;
+        this.updateInnerImg(this._coverImg);
+        this.updateCoverImg(tempImg);
     }
 
     _clearCanvas = (canvas) => {
@@ -122,19 +127,18 @@ export class Mirage_Colored {
 
     _convertGray = (imgData) => {
         const data = imgData.data;
+        const ret = new Uint8ClampedArray(data.length >> 2);
         for (let i = 0; i < data.length; i += 4) {
-            const gray = Math.floor(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
-            data[i] = gray;
-            data[i + 1] = gray;
-            data[i + 2] = gray;
+            ret[i >> 2] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
         }
+        return ret;
     }
 
     updateColorMode = (is_colored) => {
         this._is_colored = is_colored;
-        if (this._innerImgData) {
-            this.updateInnerImg(this._innerImg);
-        }
+        this._innerDataCache = null;
+        this._coverDataCache = null;
+        this._process();
     }
 
     updateMaxSize = (max_size) => {
@@ -150,54 +154,86 @@ export class Mirage_Colored {
         this._process();
     }
 
+    updateInnerDesat = (desat_i) => {
+        this._desat_i = desat_i;
+        this._innerDataCache = null;
+        this._process();
+    }
+
     updateCoverScale = (scale_c) => {
         this._scale_c = 1 - scale_c;
         this._coverDataCache = null;
         this._process();
     }
 
-    updateInnerWeight = (weight_i) => {
-        this._weight_i = weight_i;
+    updateCoverDesat = (desat_c) => {
+        this._desat_c = desat_c;
+        this._coverDataCache = null;
         this._process();
     }
 
-    _process = () => {
-        if (!this._innerImgData || !this._coverImgData) {
-            return;
-        }
-        let flag = false;
-        if (!this._innerDataCache) {
-            const data = this._innerImgData.data;
-            this._innerDataCache = new Uint8ClampedArray(data.length);
-            for (let i = 0; i < data.length; i += 4) {
-                this._innerDataCache[i] = Math.floor(data[i] * this._scale_i);
-                this._innerDataCache[i + 1] = Math.floor(data[i + 1] * this._scale_i);
-                this._innerDataCache[i + 2] = Math.floor(data[i + 2] * this._scale_i);
-            }
-            flag = true;
-        }
-        if (!this._coverDataCache) {
-            const data = this._coverImgData.data;
-            this._coverDataCache = new Uint8ClampedArray(data.length);
-            for (let i = 0; i < data.length; i += 4) {
-                this._coverDataCache[i] = Math.floor(255 - (255 - data[i]) * this._scale_c);
-                this._coverDataCache[i + 1] = Math.floor(255 - (255 - data[i + 1]) * this._scale_c);
-                this._coverDataCache[i + 2] = Math.floor(255 - (255 - data[i + 2]) * this._scale_c);
-            }
-            flag = true;
-        }
+    updateInnerWeight = (weight_i) => {
+        this._weight_i = weight_i;
         if (this._is_colored) {
+            this._process();
+        }
+    }
+
+    _process = () => {
+        if (this._is_colored) {
+            if (!this._innerImgData || !this._coverImgData) {
+                return;
+            }
+            let flag = false;
+            if (!this._innerDataCache) {
+                const data = this._innerImgData.data;
+                this._innerDataCache = new Uint8ClampedArray(data.length);
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i] * this._scale_i;
+                    const g = data[i + 1] * this._scale_i;
+                    const b = data[i + 2] * this._scale_i;
+                    const l = this._innerDataGray[i >> 2] * this._scale_i;
+                    this._innerDataCache[i] = r + (l - r) * this._desat_i;
+                    this._innerDataCache[i + 1] = g + (l - g) * this._desat_i;
+                    this._innerDataCache[i + 2] = b + (l - b) * this._desat_i;
+                }
+                flag = true;
+            }
+            if (!this._coverDataCache) {
+                const data = this._coverImgData.data;
+                this._coverDataCache = new Uint8ClampedArray(data.length);
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = 255 - (255 - data[i]) * this._scale_c;
+                    const g = 255 - (255 - data[i + 1]) * this._scale_c;
+                    const b = 255 - (255 - data[i + 2]) * this._scale_c;
+                    const l = 255 - (255 - this._coverDataGray[i >> 2]) * this._scale_c;
+                    this._coverDataCache[i] = r + (l - r) * this._desat_c;
+                    this._coverDataCache[i + 1] = g + (l - g) * this._desat_c;
+                    this._coverDataCache[i + 2] = b + (l - b) * this._desat_c;
+                }
+                flag = true;
+            }
             if (!this._alphaCache || flag) {
                 this._alphaCache = new Float32Array(this._innerDataCache.length >> 2);
-                for (let i = 0; i < this._innerDataCache.length; i += 4) {
-                    const ir = this._innerDataCache[i];
-                    const ig = this._innerDataCache[i + 1];
-                    const ib = this._innerDataCache[i + 2];
-                    const cr = this._coverDataCache[i];
-                    const cg = this._coverDataCache[i + 1];
-                    const cb = this._coverDataCache[i + 2];
-                    const dr = ir - cr, dg = ig - cg, db = ib - cb;
-                    this._alphaCache[i >> 2] = Math.min(Math.max((1 + (((2048 | (dr + ((ir + cr) << 1))) * dr - (db + ((ir + cr) << 1) - 3068) * db + (dg << 12)) / (1020 * (dr - db) + 2349060))), 0), 1);
+                /**
+                /* improved alpha calculation algorithm using LAB color space
+                /* ref: https://github.com/Ductory/ducklib/blob/main/tank.c
+                 */
+                // for (let i = 0; i < this._innerDataCache.length; i += 4) {
+                //     const ir = this._innerDataCache[i];
+                //     const ig = this._innerDataCache[i + 1];
+                //     const ib = this._innerDataCache[i + 2];
+                //     const cr = this._coverDataCache[i];
+                //     const cg = this._coverDataCache[i + 1];
+                //     const cb = this._coverDataCache[i + 2];
+                //     const dr = ir - cr, dg = ig - cg, db = ib - cb;
+                //     this._alphaCache[i >> 2] = Math.min(Math.max((1 + (((2048 | (dr + ((ir + cr) << 1))) * dr - (db + ((ir + cr) << 1) - 3068) * db + (dg << 12)) / (1020 * (dr - db) + 2349060))), 0), 1);
+                // }
+                /**
+                /* actually simply using the gray values is enough
+                 */
+                for (let i = 0; i < this._innerDataGray.length; i++) {
+                    this._alphaCache[i] = Math.min(Math.max((255 + this._innerDataGray[i] * this._scale_i - (255 - (255 - this._coverDataGray[i]) * this._scale_c)) / 255, 0), 1);
                 }
             }
             this._outputData = new Uint8ClampedArray(this._innerDataCache.length);
@@ -210,14 +246,16 @@ export class Mirage_Colored {
                 this._outputData[i + 3] = a * 255;
             }
         } else {
-            this._outputData = new Uint8ClampedArray(this._innerDataCache.length);
-            for (let i = 0; i < this._innerDataCache.length; i += 4) {
-                const a = 255 + this._innerDataCache[i] - this._coverDataCache[i];
-                const l = this._innerDataCache[i] * 255 / a;
-                this._outputData[i] = l;
-                this._outputData[i + 1] = l;
-                this._outputData[i + 2] = l;
-                this._outputData[i + 3] = a;
+            this._outputData = new Uint8ClampedArray(this._innerDataGray.length << 2);
+            for (let i = 0; i < this._innerDataGray.length; i++) {
+                const li = this._innerDataGray[i] * this._scale_i;
+                const lc = 255 - (255 - this._coverDataGray[i]) * this._scale_c;
+                const a = 255 + li - lc;
+                const l = li * 255 / a;
+                this._outputData[i << 2] = l;
+                this._outputData[(i << 2) + 1] = l;
+                this._outputData[(i << 2) + 2] = l;
+                this._outputData[(i << 2) + 3] = a;
             }
         }
         this._showOutput();
@@ -243,6 +281,9 @@ export class Mirage_Colored {
     }
 
     saveResult = () => {
+        if (!this._outputData) {
+            return;
+        }
         const link = document.createElement('a');
         link.download = `result_${new Date().getTime()}.png`;
         link.href = this._outputCanvas.toDataURL('image/png');

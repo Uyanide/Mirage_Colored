@@ -3,6 +3,8 @@
     "is_colored": true,
     "scale_i": 0.3,
     "scale_c": 0.2,
+    "desat_i": 0,
+    "desat_c": 0,
     "weight_i": 0.7,
     "max_size": 1200
 }

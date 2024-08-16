@@ -1,9 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
-const TerserPlugin = require('terser-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const HtmlinlineScriptPlugin = require('html-inline-script-webpack-plugin');
 
 module.exports = {
     entry: './src/scripts/init.js',
@@ -25,17 +23,17 @@ module.exports = {
                     },
                 },
             },
-            {
-                test: /\.(png|jpe?g|gif)$/i,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: '[path][name].[ext]',
-                        },
-                    },
-                ],
-            },
+            // {
+            //     test: /\.(png|jpe?g|gif)$/i,
+            //     use: [
+            //         {
+            //             loader: 'file-loader',
+            //             options: {
+            //                 name: '[path][name].[ext]',
+            //             },
+            //         },
+            //     ],
+            // },
             {
                 test: /\.ico$/i,
                 use: [
@@ -76,26 +74,5 @@ module.exports = {
             inject: 'head',
             scriptLoading: 'defer',
         }),
-        new HtmlinlineScriptPlugin(),
     ],
-    mode: 'production',
-    // mode: 'development',
-    // devtool: 'source-map',
-    optimization: {
-        minimize: true,
-        minimizer: [new TerserPlugin({
-            // terserOptions: {
-            //     compress: {
-            //         drop_console: true,
-            //     },
-            // },
-        })],
-    },
-    devServer: {
-        static: {
-            directory: path.join(__dirname, './docs'),
-        },
-        compress: true,
-        port: 9000,
-    },
 };

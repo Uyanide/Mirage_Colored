@@ -118,6 +118,48 @@ const eventListU = [
         }
     },
     {
+        id: 'innerDesatRange', event: 'input', callback: (e) => {
+            applicationState.innerDesatInput.value = e.target.value;
+            processor.mirage.updateInnerDesat(parseFloat(e.target.value));
+        }
+    },
+    {
+        id: 'innerDesatInput', event: 'input', callback: (e) => {
+            clearTimeout(applicationState.innerDesatTimeout);
+            applicationState.innerDesatTimeout = setTimeout(() => {
+                let value = parseFloat(e.target.value);
+                if (isNaN(value)) {
+                    return;
+                }
+                value = Math.min(Math.max(value, 0), 1);
+                applicationState.innerDesatSlider.value = value;
+                applicationState.innerDesatInput.value = value;
+                processor.mirage.updateInnerDesat(value);
+            }, 500);
+        }
+    },
+    {
+        id: 'coverDesatRange', event: 'input', callback: (e) => {
+            applicationState.coverDesatInput.value = e.target.value;
+            processor.mirage.updateCoverDesat(parseFloat(e.target.value));
+        }
+    },
+    {
+        id: 'coverDesatInput', event: 'input', callback: (e) => {
+            clearTimeout(applicationState.coverDesatTimeout);
+            applicationState.coverDesatTimeout = setTimeout(() => {
+                let value = parseFloat(e.target.value);
+                if (isNaN(value)) {
+                    return;
+                }
+                value = Math.min(Math.max(value, 0), 1);
+                applicationState.coverDesatSlider.value = value;
+                applicationState.coverDesatInput.value = value;
+                processor.mirage.updateCoverDesat(value);
+            }, 500);
+        }
+    },
+    {
         id: 'isColoredCheckbox', event: 'change', callback: (e) => {
             processor.mirage.updateColorMode(e.target.checked);
         }
@@ -172,6 +214,10 @@ const setUpListeners = () => {
         applicationState.coverScaleInput = document.getElementById('coverScaleInput');
         applicationState.innerWeightSlider = document.getElementById('innerWeightRange');
         applicationState.innerWeightInput = document.getElementById('innerWeightInput');
+        applicationState.innerDesatSlider = document.getElementById('innerDesatRange');
+        applicationState.innerDesatInput = document.getElementById('innerDesatInput');
+        applicationState.coverDesatSlider = document.getElementById('coverDesatRange');
+        applicationState.coverDesatInput = document.getElementById('coverDesatInput');
 
         eventListU.forEach((event) => {
             document.getElementById(event.id).addEventListener(event.event, (e) => {
