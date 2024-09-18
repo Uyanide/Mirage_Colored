@@ -13,7 +13,4 @@ module.exports = merge(common, {
         minimize: true,
         minimizer: [new TerserPlugin()],
     },
-    plugins: [
-        new HtmlinlineScriptPlugin(),
-    ],
 });

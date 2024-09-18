@@ -180,10 +180,10 @@ export class Mirage_Colored {
     }
 
     _process = () => {
+        if (!this._innerImgData || !this._coverImgData) {
+            return;
+        }
         if (this._is_colored) {
-            if (!this._innerImgData || !this._coverImgData) {
-                return;
-            }
             let flag = false;
             if (!this._innerDataCache) {
                 const data = this._innerImgData.data;
