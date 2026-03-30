@@ -1,13 +1,13 @@
 export class Mirage_Colored {
     constructor(defaultArguments, innerCanvas, coverCanvas, outputCanvas, whiteCanvas, blackCanvas) {
         // Arguments
-        this._scale_i = defaultArguments.scale_i;
-        this._scale_c = 1 - defaultArguments.scale_c;
+        this._scale_i = defaultArguments.scale_i / 100;
+        this._scale_c = 1 - defaultArguments.scale_c / 100;
 
-        this._weight_i = defaultArguments.weight_i;
+        this._weight_i = defaultArguments.weight_i / 100;
 
-        this._desat_i = defaultArguments.desat_i;
-        this._desat_c = defaultArguments.desat_c;
+        this._desat_i = defaultArguments.desat_i / 100;
+        this._desat_c = defaultArguments.desat_c / 100;
 
         this._is_colored = defaultArguments.is_colored;
         this._max_size = defaultArguments.max_size;
@@ -278,6 +278,36 @@ export class Mirage_Colored {
         ctx3.fillStyle = 'white';
         ctx3.fillRect(0, 0, this._width, this._height);
         ctx3.drawImage(this._outputCanvas, 0, 0);
+        clearTimeout(this._fileSizeTimeout);
+        this._fileSizeTimeout = setTimeout(() => this.calcFileSize(), 300);
+    }
+
+    calcFileSize = () => {
+        this._outputCanvas.toBlob((blob) => {
+            if (!blob) return;
+            const sizeKB = (blob.size / 1024).toFixed(1);
+            const sizeMB = (blob.size / 1024 / 1024).toFixed(2);
+            const el = document.getElementById('fileSizePreview');
+            if (el) {
+                el.textContent = blob.size > 1024 * 1024
+                    ? `文件大小：${sizeMB} MB`
+                    : `文件大小：${sizeKB} KB`;
+            }
+            const maxBytes = window.getMaxBytes ? window.getMaxBytes() : 0;
+            if (maxBytes > 0 && blob.size > maxBytes) {
+                this.calcMaxSizeForLimit(blob.size, maxBytes);
+            }
+        }, 'image/png');
+    }
+
+    calcMaxSizeForLimit = (currentSize, maxBytes) => {
+        const ratio = Math.sqrt(maxBytes / currentSize);
+        const newMaxSize = Math.floor(Math.max(this._width, this._height) * ratio);
+        const maxSizeInput = document.getElementById('maxSizeInput');
+        if (maxSizeInput) {
+            maxSizeInput.value = newMaxSize;
+            this.updateMaxSize(newMaxSize);
+        }
     }
 
     saveResult = () => {
@@ -285,7 +315,8 @@ export class Mirage_Colored {
             return;
         }
         const link = document.createElement('a');
-        link.download = `result_${new Date().getTime()}.png`;
+        const baseName = this.innerFileName || `result_${new Date().getTime()}`;
+        link.download = `${baseName}_mirage.png`;
         link.href = this._outputCanvas.toDataURL('image/png');
         document.body.appendChild(link);
         link.click();

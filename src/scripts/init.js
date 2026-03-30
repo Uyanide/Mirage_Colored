@@ -57,12 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
         location.reload(true);
     }
 
-    // 显示版本号
-    const versionInfoElement = document.getElementById('versionInfo');
-    if (versionInfoElement) {
-        versionInfoElement.innerHTML = `version: <b>${applicationState.version}</b>`;
-    }
-
     const canvasList = [
         document.getElementById('innerCanvas'),
         document.getElementById('coverCanvas'),

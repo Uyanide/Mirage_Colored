@@ -33,7 +33,11 @@ const eventListU = [
     {
         id: 'innerFileInput', event: 'change', callback: async (e) => {
             const file = e.target.files[0];
+            const name = file.name.replace(/\.[^/.]+$/, '');
+            processor.mirage.innerFileName = name;
             processor.mirage.updateInnerImg(await loadImage(file));
+            const label = document.getElementById('innerCanvasLabel');
+            if (label) label.style.display = 'none';
             e.target.value = '';
         }, errorMsg: '里图加载失败! '
     },
@@ -41,6 +45,8 @@ const eventListU = [
         id: 'coverFileInput', event: 'change', callback: async (e) => {
             const file = e.target.files[0];
             processor.mirage.updateCoverImg(await loadImage(file));
+            const label = document.getElementById('coverCanvasLabel');
+            if (label) label.style.display = 'none';
             e.target.value = '';
         }, errorMsg: '表图加载失败! '
     },
@@ -57,7 +63,7 @@ const eventListU = [
     {
         id: 'innerScaleRange', event: 'input', callback: (e) => {
             applicationState.innerScaleInput.value = e.target.value;
-            processor.mirage.updateInnerScale(parseFloat(e.target.value));
+            processor.mirage.updateInnerScale(parseFloat(e.target.value) / 100);
         }
     },
     {
@@ -68,17 +74,17 @@ const eventListU = [
                 if (isNaN(value)) {
                     return;
                 }
-                value = Math.min(Math.max(value, 0), 1);
+                value = Math.min(Math.max(value, 0), 100);
                 applicationState.innerScaleSlider.value = value;
                 applicationState.innerScaleInput.value = value;
-                processor.mirage.updateInnerScale(value);
+                processor.mirage.updateInnerScale(value / 100);
             }, 500);
         }
     },
     {
         id: 'coverScaleRange', event: 'input', callback: (e) => {
             applicationState.coverScaleInput.value = e.target.value;
-            processor.mirage.updateCoverScale(parseFloat(e.target.value));
+            processor.mirage.updateCoverScale(parseFloat(e.target.value) / 100);
         }
     },
     {
@@ -89,17 +95,17 @@ const eventListU = [
                 if (isNaN(value)) {
                     return;
                 }
-                value = Math.min(Math.max(value, 0), 1);
+                value = Math.min(Math.max(value, 0), 100);
                 applicationState.coverScaleSlider.value = value;
                 applicationState.coverScaleInput.value = value;
-                processor.mirage.updateCoverScale(value);
+                processor.mirage.updateCoverScale(value / 100);
             }, 500);
         }
     },
     {
         id: 'innerWeightRange', event: 'input', callback: (e) => {
             applicationState.innerWeightInput.value = e.target.value;
-            processor.mirage.updateInnerWeight(parseFloat(e.target.value));
+            processor.mirage.updateInnerWeight(parseFloat(e.target.value) / 100);
         }
     },
     {
@@ -110,17 +116,17 @@ const eventListU = [
                 if (isNaN(value)) {
                     return;
                 }
-                value = Math.min(Math.max(value, 0), 1);
+                value = Math.min(Math.max(value, 0), 100);
                 applicationState.innerWeightSlider.value = value;
                 applicationState.innerWeightInput.value = value;
-                processor.mirage.updateInnerWeight(value);
+                processor.mirage.updateInnerWeight(value / 100);
             }, 500);
         }
     },
     {
         id: 'innerDesatRange', event: 'input', callback: (e) => {
             applicationState.innerDesatInput.value = e.target.value;
-            processor.mirage.updateInnerDesat(parseFloat(e.target.value));
+            processor.mirage.updateInnerDesat(parseFloat(e.target.value) / 100);
         }
     },
     {
@@ -131,17 +137,17 @@ const eventListU = [
                 if (isNaN(value)) {
                     return;
                 }
-                value = Math.min(Math.max(value, 0), 1);
+                value = Math.min(Math.max(value, 0), 100);
                 applicationState.innerDesatSlider.value = value;
                 applicationState.innerDesatInput.value = value;
-                processor.mirage.updateInnerDesat(value);
+                processor.mirage.updateInnerDesat(value / 100);
             }, 500);
         }
     },
     {
         id: 'coverDesatRange', event: 'input', callback: (e) => {
             applicationState.coverDesatInput.value = e.target.value;
-            processor.mirage.updateCoverDesat(parseFloat(e.target.value));
+            processor.mirage.updateCoverDesat(parseFloat(e.target.value) / 100);
         }
     },
     {
@@ -152,10 +158,10 @@ const eventListU = [
                 if (isNaN(value)) {
                     return;
                 }
-                value = Math.min(Math.max(value, 0), 1);
+                value = Math.min(Math.max(value, 0), 100);
                 applicationState.coverDesatSlider.value = value;
                 applicationState.coverDesatInput.value = value;
-                processor.mirage.updateCoverDesat(value);
+                processor.mirage.updateCoverDesat(value / 100);
             }, 500);
         }
     },
@@ -185,26 +191,77 @@ const eventListU = [
             processor.mirage.swapImg();
         }
     },
-    {
-        id: 'downloadHtmlLink', event: 'click', callback: () => {
-            const currentHtml = document.documentElement.outerHTML;
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(currentHtml, 'text/html');
-            const sourceElement = doc.getElementById('content');
-            const newDoc = document.implementation.createHTMLDocument('Filtered Document');
-            newDoc.head.innerHTML = doc.head.innerHTML;
-            doc.body.classList.forEach(cls => newDoc.body.classList.add(cls));
-            newDoc.body.appendChild(newDoc.importNode(sourceElement, true));
-            const a = document.createElement('a');
-            a.download = 'mirage.html';
-            a.href = URL.createObjectURL(new Blob([newDoc.documentElement.outerHTML], { type: 'text/html' }));
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
-        }, errorMsg: '下载失败! '
-    }
 ]
+
+const setupPlusMinusButton = (paramName, sliderEl, inputEl, updateFn, step = 2) => {
+    const minusBtn = document.getElementById(paramName + 'Minus');
+    const plusBtn = document.getElementById(paramName + 'Plus');
+    if (minusBtn) {
+        minusBtn.addEventListener('click', () => {
+            let value = parseFloat(inputEl.value) - step;
+            value = Math.min(Math.max(value, 0), 100);
+            inputEl.value = value;
+            sliderEl.value = value;
+            updateFn(value / 100);
+        });
+    }
+    if (plusBtn) {
+        plusBtn.addEventListener('click', () => {
+            let value = parseFloat(inputEl.value) + step;
+            value = Math.min(Math.max(value, 0), 100);
+            inputEl.value = value;
+            sliderEl.value = value;
+            updateFn(value / 100);
+        });
+    }
+};
+
+const setupCanvasZoom = () => {
+    const mask = document.createElement('div');
+    mask.className = 'preview-mask';
+    document.body.appendChild(mask);
+
+    const zoomableCanvases = ['outputCanvas', 'blackCanvas', 'whiteCanvas'];
+    let zoomedCanvas = null;
+
+    const closeZoom = () => {
+        if (zoomedCanvas) {
+            zoomedCanvas.classList.remove('canvas-zoomed');
+            zoomedCanvas = null;
+            mask.style.display = 'none';
+        }
+    };
+
+    mask.addEventListener('click', () => {
+        if (zoomedCanvas) {
+            history.back();
+        }
+    });
+
+    window.addEventListener('popstate', () => {
+        if (!location.hash.startsWith('#preview')) {
+            closeZoom();
+        }
+    });
+
+    zoomableCanvases.forEach((id) => {
+        const canvas = document.getElementById(id);
+        if (canvas) {
+            canvas.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (zoomedCanvas === canvas) {
+                    history.back();
+                } else {
+                    if (zoomedCanvas) closeZoom();
+                    location.hash = '#preview';
+                    canvas.classList.add('canvas-zoomed');
+                    zoomedCanvas = canvas;
+                    mask.style.display = 'block';
+                }
+            });
+        }
+    });
+};
 
 const setUpListeners = () => {
     try {
@@ -224,6 +281,31 @@ const setUpListeners = () => {
                 setup(e, event.callback, event.errorMsg || '操作失败! ');
             });
         });
+
+        // Plus/minus buttons
+        setupPlusMinusButton('innerScale', applicationState.innerScaleSlider, applicationState.innerScaleInput, (v) => processor.mirage.updateInnerScale(v));
+        setupPlusMinusButton('coverScale', applicationState.coverScaleSlider, applicationState.coverScaleInput, (v) => processor.mirage.updateCoverScale(v));
+        setupPlusMinusButton('innerWeight', applicationState.innerWeightSlider, applicationState.innerWeightInput, (v) => processor.mirage.updateInnerWeight(v));
+        setupPlusMinusButton('innerDesat', applicationState.innerDesatSlider, applicationState.innerDesatInput, (v) => processor.mirage.updateInnerDesat(v));
+        setupPlusMinusButton('coverDesat', applicationState.coverDesatSlider, applicationState.coverDesatInput, (v) => processor.mirage.updateCoverDesat(v));
+
+        // File size limit -> triggers maxSize recalculation
+        const maxFileSizeInput = document.getElementById('maxFileSizeInput');
+        if (maxFileSizeInput) {
+            window.getMaxBytes = () => {
+                const mb = parseFloat(maxFileSizeInput.value);
+                return (isNaN(mb) || mb <= 0) ? 0 : mb * 1024 * 1024;
+            };
+            maxFileSizeInput.addEventListener('input', () => {
+                const maxSizeInput = document.getElementById('maxSizeInput');
+                if (maxSizeInput) {
+                    maxSizeInput.dispatchEvent(new Event('input'));
+                }
+            });
+        }
+
+        // Canvas zoom
+        setupCanvasZoom();
 
         if (!applicationState.isOnPhone) {
             applicationState.mouseX = 0;
@@ -279,24 +361,11 @@ const setUpListeners = () => {
                 });
             });
         } else {
-            document.getElementById('innerInputHint').remove();
-            document.getElementById('coverInputHint').remove();
+            const innerHint = document.getElementById('innerInputHint');
+            const coverHint = document.getElementById('coverInputHint');
+            if (innerHint) innerHint.remove();
+            if (coverHint) coverHint.remove();
         }
-
-        document.getElementById('toggleVersionRecord').addEventListener('click', (event) => {
-            const changelog = document.getElementById('versionRecordTable');
-            const state = window.getComputedStyle(changelog).display;
-            if (state === 'none') {
-                changelog.classList.remove('displayNone');
-                changelog.classList.add('displayBlock');
-                event.target.textContent = '隐藏主要更新记录';
-                window.scrollTo(0, document.body.scrollHeight);
-            } else {
-                changelog.classList.remove('displayBlock');
-                changelog.classList.add('displayNone');
-                event.target.textContent = '显示主要更新记录';
-            }
-        });
     } catch (e) {
         alert('监听器设置失败! ' + e.message);
         console.error('监听器设置失败!', e.message, e.stack);

@@ -1,10 +1,10 @@
 {
-    "app_version": "1.0.0",
-    "is_colored": true,
-    "scale_i": 0.3,
-    "scale_c": 0.2,
+    "app_version": "1.5.5",
+    "is_colored": false,
+    "scale_i": 60,
+    "scale_c": 0,
     "desat_i": 0,
     "desat_c": 0,
-    "weight_i": 0.7,
-    "max_size": 1200
+    "weight_i": 70,
+    "max_size": 0
 }

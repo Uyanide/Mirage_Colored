@@ -1,21 +1,19 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幻影工厂</title>
+    <meta name="color-scheme" content="light only">
+    <title>幻影工厂+</title>
 </head>
 
 <body class="backgroundPrimary">
     <div id="content" class="displayFlexColumn marginTopHigh backgroundPrimary frontColor">
-        <h1 class="title marginBottomMedium">幻影坦克工厂</h1>
-
-        <div class="fontMedium frontSecondaryColor marginTopMedium">五维控制，全彩输出！;D</div>
 
         <div class="displayFlexRow fontMedium marginTopMedium frontSecondaryColor">
-            <div id="downloadHtmlLink" class="textDecorationUnderline frontLinkColor transformSize">下载当前页面</div>
-            <div class="frontSecondaryColor fontSmall marginLeftLow">(可在任意支持html5的浏览器中使用)</div>
+            <div id="downloadHtmlLink" class="textDecorationUnderline frontLinkColor transformSize"></div>
+            <div class="frontSecondaryColor fontSmall marginLeftLow"></div>
         </div>
 
         <div class="switchContainer displayFlexRow paddingHigh backgroundSecondary" id="isDarkmodeContainer">
@@ -32,25 +30,25 @@
                 <div class="RowContainer refWidthHigh displayFlexRow justifySpaceBetween marginTopHigh">
                     <div class="CanvasContainer displayFlexColumn paddingMedium refWidthHalf">
                         <div class="marginBottomMedium">
-                            <label for="innerFileInput" class="inputReact transformSize">选择里图文件</label>
-                            <input type="file" id="innerFileInput" accept="image/*">
+                            <label for="innerFileInput" class="inputReact transformSize" style="display: none;">选择里图文件</label>
+                            <input type="file" id="innerFileInput" accept="*/*">
                         </div>
-                        <div id="innerInputHint" class="displayFlexColumn marginTopLow fontSmall">
-                            <div>或拖动至下方画布</div>
-                            <div class="marginTopLow">或粘贴 (ctrl+v)</div>
+                        <div id="innerInputHint" style="display: none;"></div>
+                        <div class="canvasWrapper positionRelative refWidthFull marginTopMedium">
+                            <canvas id="innerCanvas" class="refWidthFull"></canvas>
+                            <div id="innerCanvasLabel" class="canvasLabel frontSecondaryColor fontSmall">点击选择里图</div>
                         </div>
-                        <canvas id="innerCanvas" class="refWidthFull marginTopMedium"></canvas>
                     </div>
                     <div class="CanvasContainer displayFlexColumn paddingMedium refWidthHalf">
                         <div class="marginBottomMedium">
-                            <label for="coverFileInput" class="inputReact transformSize">选择表图文件</label>
-                            <input type="file" id="coverFileInput" accept="image/*">
+                            <label for="coverFileInput" class="inputReact transformSize" style="display: none;">选择表图文件</label>
+                            <input type="file" id="coverFileInput" accept="*/*">
                         </div>
-                        <div id="coverInputHint" class="displayFlexColumn marginTopLow fontSmall">
-                            <div>或拖动至下方画布</div>
-                            <div class="marginTopLow">或粘贴 (ctrl+v)</div>
+                        <div id="coverInputHint" style="display: none;"></div>
+                        <div class="canvasWrapper positionRelative refWidthFull marginTopMedium">
+                            <canvas id="coverCanvas" class="refWidthFull"></canvas>
+                            <div id="coverCanvasLabel" class="canvasLabel frontSecondaryColor fontSmall">点击选择表图</div>
                         </div>
-                        <canvas id="coverCanvas" class="refWidthFull marginTopMedium"></canvas>
                     </div>
                 </div>
                 <div class="RowContainer refWidthHigh displayFlexRow justifySpaceBetween marginTopHigh">
@@ -65,101 +63,80 @@
                         <hr class="refWidthHigh marginTopMedium marginBottomMedium">
                         <button id="swapButton" class="inputReact transformSize">表里图互换</button>
                         <hr class="refWidthHigh marginTopMedium marginBottomMedium">
-                        <div class="">输出图像尺寸:</div>
-                        <input type="number" id="maxSizeInput" class="inputReact marginTopLow" min="1" max="4096">
-                        <div class="marginTopLow fontSmall frontSecondaryColor">(指长和宽中的较大值)</div>
-                        <div class="fontSmall frontSecondaryColor">(0即为不指定)</div>
-                        <hr class="refWidthHigh marginTopMedium marginBottomMedium">
-                        <div class="">里图混合权重</div>
-                        <input type="range" id="innerWeightRange" class="refWidthHigh marginTopLow" min="0" max="1"
-                            step="0.02">
-                        <div class="marginTopLow">
-                            <span>或输入: </span>
-                            <input type="number" id="innerWeightInput" class="inputReact" step="0.02">
+                        <div>
+                            <div>
+                                输出图片尺寸:
+                                <input type="number" id="maxSizeInput" class="inputReact marginTopLow" min="1" max="4096">
+                            </div>
+                            <div style="margin-top: 6px;">
+                                <span class="marginLeftLow">文件大小上限:</span>
+                                <input type="number" id="maxFileSizeInput" class="inputReact marginLeftLow" min="0" max="128" value="5" step="1">
+                            </div>
                         </div>
-                        <div class="marginTopLow fontSmall frontSecondaryColor">
-                            (0~1,黑白输出时无效)<br>(越高里图色彩越准确)<br>(反之表图色彩越准确)
+                        <hr class="refWidthHigh marginTopMedium marginBottomMedium">
+                        <div class="">里图混色权重</div>
+                        <input type="range" id="innerWeightRange" class="refWidthHigh marginTopLow" min="0" max="100"
+                            step="2">
+                        <div class="marginTopLow displayFlexRow alignCenter gapLow">
+                            <button id="innerWeightMinus" class="inputReact transformSize" style="width: auto; padding: 5px 8px;">&lt;</button>
+                            <input type="number" id="innerWeightInput" class="inputReact" step="0.02">
+                            <button id="innerWeightPlus" class="inputReact transformSize" style="width: auto; padding: 5px 8px;">&gt;</button>
                         </div>
                     </div>
                     <div class="CanvasContainer displayFlexColumn paddingMedium refWidthHalf">
-                        <div class="">↓ 输出图像 ↓</div>
                         <canvas id="outputCanvas" class="refWidthFull marginTopMedium"></canvas>
+                        <div class="marginTopLow fontSmall frontColor" id="fileSizePreview">文件大小：</div>
                         <button id="saveButton" class="inputReact transformSize marginTopHigh">保存结果</button>
                     </div>
                 </div>
                 <div
                     class="RowContainer refWidthHigh displayFlexRow justifySpaceBetween marginTopHigh marginBottomHigh">
                     <div class="CanvasContainer displayFlexColumn paddingMedium refWidthHalf">
-                        <div class="marginTopMedium">↓ 黑色背景预览 ↓</div>
                         <canvas id="blackCanvas" class="refWidthFull marginTopMedium"></canvas>
-                        <div class="marginTopMedium">里图色阶缩放</div>
-                        <input type="range" id="innerScaleRange" class="refWidthHigh marginTopLow" min="0" max="1"
-                            step="0.02">
-                        <div class="marginTopLow">
-                            <span>或输入: </span>
+                        <div class="marginTopMedium">里图亮度</div>
+                        <input type="range" id="innerScaleRange" class="refWidthHigh marginTopLow" min="0" max="100"
+                            step="2">
+                        <div class="marginTopLow displayFlexRow alignCenter gapLow">
+                            <button id="innerScaleMinus" class="inputReact transformSize" style="width: auto; padding: 5px 8px;">&lt;</button>
                             <input type="number" id="innerScaleInput" class="inputReact" step="0.02">
-                        </div>
-                        <div class="marginTopLow diplayFlexColumn fontSmall frontSecondaryColor">(0~1,越低里图越暗)
+                            <button id="innerScalePlus" class="inputReact transformSize" style="width: auto; padding: 5px 8px;">&gt;</button>
                         </div>
                         <hr class="refWidthHigh marginTopMedium marginBottomMedium">
                         <div class="">里图去色</div>
-                        <input type="range" id="innerDesatRange" class="refWidthHigh marginTopLow" min="0" max="1"
-                            step="0.02">
-                        <div class="marginTopLow">
-                            <span>或输入: </span>
+                        <input type="range" id="innerDesatRange" class="refWidthHigh marginTopLow" min="0" max="100"
+                            step="2">
+                        <div class="marginTopLow displayFlexRow alignCenter gapLow">
+                            <button id="innerDesatMinus" class="inputReact transformSize" style="width: auto; padding: 5px 8px;">&lt;</button>
                             <input type="number" id="innerDesatInput" class="inputReact" step="0.02">
+                            <button id="innerDesatPlus" class="inputReact transformSize" style="width: auto; padding: 5px 8px;">&gt;</button>
                         </div>
-                        <div class="marginTopLow diplayFlexColumn fontSmall frontSecondaryColor">
-                            (0~1,越高越趋近黑白)</div>
                     </div>
                     <div class="CanvasContainer displayFlexColumn paddingMedium refWidthHalf">
-                        <div class="marginTopMedium">↓ 白色背景预览 ↓</div>
                         <canvas id="whiteCanvas" class="refWidthFull marginTopMedium"></canvas>
-                        <div class="marginTopMedium">表图色阶缩放</div>
-                        <input type="range" id="coverScaleRange" class="refWidthHigh marginTopLow" min="0" max="1"
-                            step="0.02">
-                        <div class="marginTopLow">
-                            <span>或输入: </span>
+                        <div class="marginTopMedium">表图亮度</div>
+                        <input type="range" id="coverScaleRange" class="refWidthHigh marginTopLow" min="0" max="100"
+                            step="2">
+                        <div class="marginTopLow displayFlexRow alignCenter gapLow">
+                            <button id="coverScaleMinus" class="inputReact transformSize" style="width: auto; padding: 5px 8px;">&lt;</button>
                             <input type="number" id="coverScaleInput" class="inputReact" step="0.02">
-                        </div>
-                        <div class="marginTopLow diplayFlexColumn fontSmall frontSecondaryColor">(0~1,越高表图越亮)
+                            <button id="coverScalePlus" class="inputReact transformSize" style="width: auto; padding: 5px 8px;">&gt;</button>
                         </div>
                         <hr class="refWidthHigh marginTopMedium marginBottomMedium">
                         <div class="">表图去色</div>
-                        <input type="range" id="coverDesatRange" class="refWidthHigh marginTopLow" min="0" max="1"
-                            step="0.02">
-                        <div class="marginTopLow">
-                            <span>或输入: </span>
+                        <input type="range" id="coverDesatRange" class="refWidthHigh marginTopLow" min="0" max="100"
+                            step="2">
+                        <div class="marginTopLow displayFlexRow alignCenter gapLow">
+                            <button id="coverDesatMinus" class="inputReact transformSize" style="width: auto; padding: 5px 8px;">&lt;</button>
                             <input type="number" id="coverDesatInput" class="inputReact" step="0.02">
+                            <button id="coverDesatPlus" class="inputReact transformSize" style="width: auto; padding: 5px 8px;">&gt;</button>
                         </div>
-                        <div class="marginTopLow diplayFlexColumn fontSmall frontSecondaryColor">
-                            (去色可减少表里色彩干扰)</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="pageBelow" class="displayFlex frontColor justifyCenter alignCenter flexColumn marginTopHigh">
-            <div id="versionInfo" class="fontLarge">version: <b>UNKNOWN</b></div>
-
-            <div class="marginTopLow fontSmall">
-                如发现有功能不正常可手动清理浏览器缓存后刷新
-            </div>
-
-            <div class="marginTopMedium fontSmall transformSize">
-                <a class="frontLinkColor" href="https://github.com/Uyanide" target="_blank">Github - Uyanide (我)</a>
-            </div>
-
-            <div class="marginTopMedium fontSmall transformSize">
-                <a class="frontLinkColor" href="https://github.com/Uyanide/Mirage_Colored" target="_blank">Github -
-                    Mirage_Colored (本项目仓库)</a>
-            </div>
-
-            <div id="toggleVersionRecord"
-                class="frontLinkColor backgroundPrimary fontSmall transformSize marginTopMedium">
-                显示主要更新记录</div>
-
-            <div id="versionRecord" class="marginTopMedium marginBottomMedium">
+            <div class="marginTopMedium marginBottomMedium">
                 <table id="versionRecordTable"
                     class="fontSmall paddingHigh borderRadiusExtreme displayNone backgroundSecondary borderCollapse frontColor">
                     <tbody>
